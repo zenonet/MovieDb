@@ -61,6 +61,8 @@ async fn main() {
         .route("/movie/{id}", get(get_movie_details))
         .route("/movie", post(post_movie).get(get_movies))
         .route("/night", post(post_night))
+        .route("/night/{id}", get(get_night_details))
+        .route("/person/{id}", get(get_person_details))
         .route("/rating", post(post_rating))
         .layer(
             CorsLayer::new()
@@ -132,16 +134,16 @@ struct MovieFetchArgs {
 }
 
 #[derive(Serialize)]
-struct Night{
+struct NightStub{
     id: Uuid,
-    time: DateTime<Utc>
+    time: DateTime<Utc>,
 }
 
 #[derive(Serialize)]
 struct MovieDetails{
     id: Uuid,
     name: String,
-    nights: Vec<Night>
+    nights: Vec<NightStub>
 }
 
 async fn get_movie_details(
@@ -162,7 +164,7 @@ async fn get_movie_details(
 
     // Fetch movie nights showing this movie
 
-    let nights = sqlx::query_as!(Night,
+    let nights = sqlx::query_as!(NightStub,
         "SELECT id, time FROM nights WHERE movie_id=$1",
         id
     )
@@ -265,6 +267,104 @@ async fn post_night(
 
     Ok(StatusCode::CREATED)
 }
+
+
+#[derive(Serialize)]
+struct PersonStub{
+    id: Uuid,
+    name: String,
+}
+
+#[derive(Serialize)]
+struct MovieStub{
+    id: Uuid,
+    name: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct NightDetails{
+    id: Uuid,
+    description: Option<String>,
+    time: DateTime<Utc>,
+    movie: MovieStub,
+    persons: Vec<PersonStub>
+}
+
+async fn get_night_details(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<Uuid>
+) -> Result<Json<NightDetails>, (StatusCode, String)>{
+    let night = sqlx::query!("SELECT time, description, movies.name AS movie_name, movies.id AS movie_id FROM nights JOIN movies ON movie_id = movies.id WHERE nights.id=$1", id).fetch_optional(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let Some(night) = night else {
+        return Err((StatusCode::NOT_FOUND, String::from("No movie with that id found")));
+    };
+
+    // Fetch persons
+    let persons = sqlx::query_as!(PersonStub, "SELECT persons.name, persons.id FROM movie_views JOIN persons ON persons.id = movie_views.person_id WHERE night_id=$1", id)
+        .fetch_all(&state.db_pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(
+        NightDetails{
+            id,
+            time: night.time,
+            description: night.description,
+            movie: MovieStub { id: night.movie_id, name: night.movie_name },
+            persons
+        }
+    ))
+}
+
+
+#[derive(Serialize)]
+struct NightStubWithMovie{
+    #[serde(flatten)]
+    stub: NightStub,
+    movie: MovieStub,
+}
+
+#[derive(Serialize)]
+struct PersonDetails{
+    name: String,
+    id: Uuid,
+    latest_nights: Vec<NightStubWithMovie>
+}
+
+async fn get_person_details(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<Uuid>
+) -> Result<Json<PersonDetails>, (StatusCode, String)>{
+    let person = sqlx::query!("SELECT * FROM persons WHERE id=$1", id)
+    .fetch_optional(&state.db_pool)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let Some(person) = person else{
+        return Err((StatusCode::NOT_FOUND, String::from("No person with that id found")))
+    };
+
+    // Fetch last nights
+    let latest_nights = sqlx::query!("SELECT night_id, nights.time, movies.name as movie_name, movies.id as movie_id FROM movie_views JOIN nights ON movie_views.night_id = nights.id JOIN movies ON nights.movie_id = movies.id WHERE movie_views.person_id = $1 ORDER BY nights.time LIMIT 10", id)
+    .fetch_all(&state.db_pool)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+
+    Ok(Json(
+        PersonDetails{
+            name: person.name,
+            id: person.id,
+            latest_nights: latest_nights.into_iter().map(|n| NightStubWithMovie{
+                movie: MovieStub { id: n.movie_id, name: n.movie_name },
+                stub: NightStub { id: n.night_id, time: n.time }
+            }).collect::<Vec<NightStubWithMovie>>()
+        }
+    ))
+}
+
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]

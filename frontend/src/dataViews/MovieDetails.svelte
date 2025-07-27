@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { PUBLIC_API_URL } from "$env/static/public";
     import { onMount } from "svelte";
     import { untrack } from 'svelte';
 
@@ -8,12 +9,12 @@
     interface MovieDetails{
         name:string,
         id: string,
-        nights: [any]
+        nights: Array<any>
     }
 
     let details: MovieDetails|null = $state(null);
     async function fetchMovieDetails(){
-        let resp = await fetch(`http://localhost:2222/movie/${movieId}`);
+        let resp = await fetch(`${PUBLIC_API_URL}/movie/${movieId}`);
         details = await resp.json();
         console.log("Movie fetched")
     }
