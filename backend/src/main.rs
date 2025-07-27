@@ -58,7 +58,7 @@ async fn main() {
             "/",
             get(|| async { "Connection to moviedb API is working!" }),
         )
-        .route("/movie/{name}", get(get_movie_by_name))
+        .route("/movie/{id}", get(get_movie_details))
         .route("/movie", post(post_movie).get(get_movies))
         .route("/night", post(post_night))
         .route("/rating", post(post_rating))
@@ -131,23 +131,53 @@ struct MovieFetchArgs {
     name: Option<String>,
 }
 
-async fn get_movie_by_name(
+#[derive(Serialize)]
+struct Night{
+    id: Uuid,
+    time: DateTime<Utc>
+}
+
+#[derive(Serialize)]
+struct MovieDetails{
+    id: Uuid,
+    name: String,
+    nights: Vec<Night>
+}
+
+async fn get_movie_details(
     State(state): State<Arc<AppState>>,
-    Path(name): Path<String>,
-    Query(pagination): Query<Pagination>,
-) -> Result<Json<Vec<Movie>>, (StatusCode, String)> {
-    let res = sqlx::query_as!(
-        Movie,
-        "SELECT * FROM movies WHERE UPPER(movies.name) LIKE UPPER($1) LIMIT $2 OFFSET $3",
-        format!("%{}%", name),
-        pagination.per_page as i32,
-        (pagination.page * pagination.per_page) as i32
+    Path(id): Path<Uuid>,
+) -> Result<Json<MovieDetails>, (StatusCode, String)> {
+    let movie = sqlx::query!(
+        "SELECT * FROM movies WHERE id = $1",
+        id
+    )
+    .fetch_optional(&state.db_pool)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let Some(movie) = movie else{
+        return Err((StatusCode::BAD_REQUEST, String::from("A movie with that id does not exist")));
+    };
+
+    // Fetch movie nights showing this movie
+
+    let nights = sqlx::query_as!(Night,
+        "SELECT id, time FROM nights WHERE movie_id=$1",
+        id
     )
     .fetch_all(&state.db_pool)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(Json(res))
+
+    let details = MovieDetails{
+        name: movie.name,
+        id,
+        nights
+    };
+
+    Ok(Json(details))
 }
 
 async fn get_movies(
@@ -180,19 +210,14 @@ async fn get_movies(
     Ok(Json(res))
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct NewMovieView {
-    movie_id: Uuid,
-    person_id: Uuid,
-}
 
 #[derive(Deserialize)]
 struct NewNight {
     timestamp: Option<DateTime<Utc>>,
     description: Option<String>,
 
-    movies: Vec<NewMovieView>,
+    persons: Vec<Uuid>,
+    movie: Uuid,
 }
 
 async fn post_night(
@@ -204,8 +229,9 @@ async fn post_night(
     // insert night
     let night_id = Uuid::new_v4();
     sqlx::query!(
-        "INSERT INTO nights (id, time, description) VALUES ($1,$2,$3)",
+        "INSERT INTO nights (id, movie_id, time, description) VALUES ($1,$2,$3,$4)",
         night_id,
+        night.movie,
         night.timestamp.unwrap_or_else(|| Utc::now()),
         night.description
     )
@@ -214,15 +240,14 @@ async fn post_night(
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     // insert views
-    for view in night.movies {
+    for person in night.persons {
         // Unfortunately, we can't do these in parallel when using a transaction
         let view_id = Uuid::new_v4();
         let res = sqlx::query!(
-            "INSERT INTO movie_views (id, movie_id, night_id, person_id) VALUES ($1,$2,$3,$4)",
+            "INSERT INTO movie_views (id, night_id, person_id) VALUES ($1,$2,$3)",
             view_id,
-            view.movie_id,
             night_id,
-            view.person_id
+            person
         )
         .execute(&mut *transation)
         .await;

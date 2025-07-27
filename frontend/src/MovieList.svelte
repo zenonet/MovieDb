@@ -13,7 +13,7 @@
 
     async function fetchMovies(){
         console.log(searchVal)
-        const resp = await fetch(`http://localhost:2222/movie?page=0&per_page=50&name=${encodeURI(searchVal)}`);
+        const resp = await fetch(`http://localhost:2222/movie?page=0&per_page=100&name=${encodeURI(searchVal)}`);
         movies = await resp.json();
     }
 
@@ -39,6 +39,7 @@
 
         border: none;
 		text-align: left;
+        font-size: 1.2em;
     }
 
     .movie-list{
