@@ -1,5 +1,5 @@
 <script>
-    import MovieDetailsPane from "../MovieDetailsPane.svelte";
+    import MovieDetails from "../dataViews/MovieDetails.svelte";
     import MovieList from "../MovieList.svelte";
 
 
@@ -17,7 +17,7 @@
     />
 
     {#if selectedId !== ""} 
-        <MovieDetailsPane movieId={selectedId}/>
+        <MovieDetails movieId={selectedId}/>
     {/if}
 </div>
 

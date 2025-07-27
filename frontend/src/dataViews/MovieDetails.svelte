@@ -12,10 +12,10 @@
         nights: Array<any>
     }
 
-    let details: MovieDetails|null = $state(null);
+    let movie: MovieDetails|null = $state(null);
     async function fetchMovieDetails(){
         let resp = await fetch(`${PUBLIC_API_URL}/movie/${movieId}`);
-        details = await resp.json();
+        movie = await resp.json();
         console.log("Movie fetched")
     }
 
@@ -34,23 +34,17 @@
 </script>
 
 
-{#if details}
+{#if movie}
 <div>
-    <h2>{details.name}</h2>
-    <div style="background-color: gray; padding: 15px">
-        <h2>Movie nights</h2>
-        <div>
-            {#each details.nights as night}
-                <a href={`/night/${night.id}`}>{new Date(night.time).toLocaleDateString(window.navigator.language)}</a>
-            {/each}
-            {#if details.nights.length == 0}
-                This movie was never presented yet
-            {/if}
-        </div>
+    <h2>{movie.name}</h2>
+    <h3>Movie nights</h3>
+    <div>
+        {#each movie.nights as night}
+            <a href={`/night/${night.id}`}>{new Date(night.time).toLocaleDateString(window.navigator.language)}</a>
+        {/each}
+        {#if movie.nights.length == 0}
+            This movie was never presented yet
+        {/if}
     </div>
 </div>
-<!-- 
-<pre>
-    { JSON.stringify(details) }
-</pre> -->
 {/if}
