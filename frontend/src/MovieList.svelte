@@ -26,7 +26,7 @@
 
     <div class="movie-list">
         {#each movies as movie}
-            <button class="movie-list-entry" onclick={onMovieClicked(movie)}>
+            <button class="movie-list-entry" onclick={() => onMovieClicked(movie)}>
                 { movie.name }
             </button>
         {/each}
