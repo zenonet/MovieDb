@@ -10,6 +10,10 @@
         name:string,
         id: string,
         nights: Array<any>
+        tagline?: string
+        coverUrl?: string
+        description?: string
+        yearOfPublication?: number
     }
 
     let movie: MovieDetails|null = $state(null);
@@ -37,7 +41,12 @@
 {#if movie}
 <div>
     <h2>{movie.name}</h2>
+    
+    {#if movie.coverUrl}
+        <img src={movie.coverUrl} alt={`Movie cover of ${movie.name}`} height="400px">
+    {/if}
     <h3>Movie nights</h3>
+    
     <div>
         {#each movie.nights as night}
             <a href={`/night/${night.id}`}>{new Date(night.time).toLocaleDateString(window.navigator.language)}</a>

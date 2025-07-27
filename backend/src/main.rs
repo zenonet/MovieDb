@@ -140,9 +140,14 @@ struct NightStub{
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct MovieDetails{
     id: Uuid,
     name: String,
+    tagline: Option<String>,
+    cover_url: Option<String>,
+    description: Option<String>,
+    year_of_publication: Option<i32>,
     nights: Vec<NightStub>
 }
 
@@ -176,7 +181,11 @@ async fn get_movie_details(
     let details = MovieDetails{
         name: movie.name,
         id,
-        nights
+        nights,
+        tagline: movie.tagline,
+        cover_url: movie.cover_url,
+        description: movie.description,
+        year_of_publication: movie.year_of_publication,
     };
 
     Ok(Json(details))
@@ -295,7 +304,7 @@ async fn get_night_details(
     State(state): State<Arc<AppState>>,
     Path(id): Path<Uuid>
 ) -> Result<Json<NightDetails>, (StatusCode, String)>{
-    let night = sqlx::query!("SELECT time, description, movies.name AS movie_name, movies.id AS movie_id FROM nights JOIN movies ON movie_id = movies.id WHERE nights.id=$1", id).fetch_optional(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let night = sqlx::query!("SELECT time, nights.description, movies.name AS movie_name, movies.id AS movie_id FROM nights JOIN movies ON movie_id = movies.id WHERE nights.id=$1", id).fetch_optional(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let Some(night) = night else {
         return Err((StatusCode::NOT_FOUND, String::from("No movie with that id found")));
