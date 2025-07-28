@@ -1,22 +1,6 @@
 import { PUBLIC_API_URL } from "$env/static/public";
+import { getNightById } from "$lib/services/movieService.js";
 
 export const load = async ({ params }) => {
-
-    const resp = await fetch(`${PUBLIC_API_URL}/night/${params.id}`);
-
-    if(!resp.ok){
-        return {
-            success: false,
-            error: await resp.text(),
-            details: null,
-        }
-    }
-
-    const res = await resp.json();
-
-    return {
-        success: true,
-        error: null,
-        details: res,
-    };
+    return await getNightById(params.id)
 };

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import { PUBLIC_API_URL } from "$env/static/public";
     import { onMount } from "svelte";
     import { untrack } from 'svelte';
@@ -41,6 +42,8 @@
 {#if movie}
 <div>
     <h2>{movie.name}</h2>
+
+    <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}>Create night</button>
     
     {#if movie.coverUrl}
         <img src={movie.coverUrl} alt={`Movie cover of ${movie.name}`} height="400px">

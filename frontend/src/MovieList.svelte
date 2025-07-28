@@ -1,10 +1,7 @@
 <script lang="ts">
     import { PUBLIC_API_URL } from "$env/static/public";
-
-    class Movie{
-        name!: string;
-        id!: string;
-    }
+    import { getMoviesByName } from "$lib/services/movieService";
+    import type { Movie } from "$lib/services/types";
 
     let { onMovieClicked } = $props<{ onMovieClicked: (id:Movie) => void}>();
 
@@ -13,9 +10,10 @@
     let movies: Movie[] = $state([]);
 
     async function fetchMovies(){
-        console.log(searchVal)
-        const resp = await fetch(`${PUBLIC_API_URL}/movie?page=0&per_page=100&name=${encodeURI(searchVal)}`);
-        movies = await resp.json();
+        let res = await getMoviesByName(searchVal);
+        if (res.status == 200){
+            movies = res.data;
+        }
     }
 
     fetchMovies();

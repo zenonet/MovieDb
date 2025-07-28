@@ -1,6 +1,6 @@
 <script lang="ts">
     let {data} = $props();
-    let night = $derived(data.details);
+    let night = $derived(data.data);
 </script>
 
 <h1>Night of {new Date(night.time).toLocaleString(navigator.language)}</h1>
