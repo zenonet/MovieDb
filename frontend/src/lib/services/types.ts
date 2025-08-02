@@ -50,3 +50,15 @@ export interface MovieDetails{
     nights: Array<Night>
     avgRating?: number
 }
+
+export interface WatchlistEntry{
+    movie: Movie,
+    idx: number
+}
+
+export interface Watchlist{
+    name: string
+    id: string
+    description?: string,
+    entries: Array<WatchlistEntry>
+}
