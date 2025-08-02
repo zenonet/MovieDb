@@ -1,17 +1,14 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { PUBLIC_API_URL } from "$env/static/public";
+    import { getMovieById } from "$lib/services/movieService";
     import type { MovieDetails } from "$lib/services/types";
-    import { onMount } from "svelte";
-    import { untrack } from 'svelte';
+    import { onMount, untrack } from "svelte";
 
     let {movieId} = $props();
 
     let movie: MovieDetails|null = $state(null);
     async function fetchMovieDetails(){
-        let resp = await fetch(`${PUBLIC_API_URL}/movie/${movieId}`);
-        movie = await resp.json();
-        console.log("Movie fetched")
+        movie = (await getMovieById(movieId)).data;
     }
 
 
