@@ -1,4 +1,4 @@
-use std::{fs, sync::Arc, time::Duration};
+use std::{collections::HashMap, fs, sync::Arc, time::Duration};
 
 use axum::{
     Json, Router,
@@ -8,7 +8,7 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use sqlx::{postgres::PgPoolOptions, prelude::FromRow, PgPool};
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 use uuid::Uuid;
@@ -62,6 +62,7 @@ async fn main() {
         .route("/movie", post(post_movie).get(get_movies))
         .route("/night", post(post_night))
         .route("/night/{id}", get(get_night_details))
+        .route("/person", get(get_persons))
         .route("/person/{id}", get(get_person_details))
         .route("/rating", post(post_rating))
         .layer(
@@ -222,9 +223,39 @@ async fn get_movies(
 }
 
 
+async fn get_persons(
+    State(state): State<Arc<AppState>>,
+    Query(args): Query<MovieFetchArgs>
+) -> Result<Json<Vec<PersonStub>>, (StatusCode, String)>{
+        let mut query = String::from("SELECT * FROM persons");
+
+    if args.name.is_some() {
+        query.push_str(" WHERE UPPER(name) LIKE $1");
+    }
+
+    query.push_str(" LIMIT $2 OFFSET $3");
+
+    let mut q = sqlx::query_as::<_, PersonStub>(&query);
+
+    if let Some(name) = args.name {
+        q = q.bind(format!("%{}%", name.to_uppercase()));
+    }
+
+    q = q
+        .bind(args.per_page as i32)
+        .bind((args.page * args.per_page) as i32);
+
+
+    let res = q.fetch_all(&state.db_pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(res))
+}
+
 #[derive(Deserialize)]
 struct NewNight {
-    timestamp: Option<DateTime<Utc>>,
+    time: Option<DateTime<Utc>>,
     description: Option<String>,
 
     persons: Vec<Uuid>,
@@ -234,7 +265,7 @@ struct NewNight {
 async fn post_night(
     State(state): State<Arc<AppState>>,
     Json(night): Json<NewNight>,
-) -> Result<StatusCode, (StatusCode, String)> {
+) -> Result<Json<HashMap<Uuid, Uuid>>, (StatusCode, String)> {
     let mut transation = state.db_pool.begin().await.unwrap();
 
     // insert night
@@ -243,12 +274,15 @@ async fn post_night(
         "INSERT INTO nights (id, movie_id, time, description) VALUES ($1,$2,$3,$4)",
         night_id,
         night.movie,
-        night.timestamp.unwrap_or_else(|| Utc::now()),
+        night.time.unwrap_or_else(|| Utc::now()),
         night.description
     )
     .execute(&mut *transation)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+
+    let mut person_to_view_map = HashMap::<Uuid, Uuid>::with_capacity(night.persons.len());
 
     // insert views
     for person in night.persons {
@@ -267,6 +301,8 @@ async fn post_night(
             transation.rollback().await.unwrap();
             return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
         }
+
+        person_to_view_map.insert(person, view_id);
     }
 
     transation
@@ -274,11 +310,11 @@ async fn post_night(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(StatusCode::CREATED)
+    Ok(Json(person_to_view_map))
 }
 
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct PersonStub{
     id: Uuid,
     name: String,
@@ -386,7 +422,7 @@ struct NewRating {
 async fn post_rating(
     State(state): State<Arc<AppState>>,
     Json(rating): Json<NewRating>,
-) -> Result<StatusCode, (StatusCode, String)> {
+) -> Result<(StatusCode, String), (StatusCode, String)> {
     let rating_id = Uuid::new_v4();
     sqlx::query!(
         "INSERT INTO ratings (id,movie_view_id,time,value) VALUES ($1,$2,$3,$4)",
@@ -399,5 +435,5 @@ async fn post_rating(
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(StatusCode::CREATED)
+    Ok((StatusCode::CREATED, rating_id.to_string()))
 }
