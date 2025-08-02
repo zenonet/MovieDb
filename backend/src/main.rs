@@ -142,6 +142,14 @@ struct NightStub{
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+struct NigthStubWithRating{
+    id: Uuid,
+    time: DateTime<Utc>,
+    avg_rating: Option<f64>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct MovieDetails{
     id: Uuid,
     name: String,
@@ -149,7 +157,8 @@ struct MovieDetails{
     cover_url: Option<String>,
     description: Option<String>,
     year_of_publication: Option<i32>,
-    nights: Vec<NightStub>
+    nights: Vec<NigthStubWithRating>,
+    avg_rating: f64,
 }
 
 async fn get_movie_details(
@@ -170,14 +179,28 @@ async fn get_movie_details(
 
     // Fetch movie nights showing this movie
 
-    let nights = sqlx::query_as!(NightStub,
-        "SELECT id, time FROM nights WHERE movie_id=$1",
+    let nights = sqlx::query_as!(NigthStubWithRating, "
+SELECT nights.id, nights.time, AVG(ratings.value) AS avg_rating FROM nights
+JOIN movie_views ON movie_views.night_id=nights.id
+JOIN ratings ON ratings.movie_view_id=movie_views.id
+WHERE movie_id=$1
+GROUP BY nights.id
+",
         id
     )
     .fetch_all(&state.db_pool)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Get the average rating of this movie across all views
+
+    // NOTE: This takes the average of all ratings including second ratings of a single movie view (aka. hangover ratings)
+    let avg_rating = sqlx::query_scalar!("
+SELECT AVG(ratings.value) FROM ratings
+JOIN movie_views ON ratings.movie_view_id=movie_views.id
+JOIN nights ON nights.id=movie_views.night_id
+WHERE movie_id=$1
+", id).fetch_one(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?.unwrap();
 
     let details = MovieDetails{
         name: movie.name,
@@ -187,6 +210,7 @@ async fn get_movie_details(
         cover_url: movie.cover_url,
         description: movie.description,
         year_of_publication: movie.year_of_publication,
+        avg_rating
     };
 
     Ok(Json(details))
@@ -320,6 +344,16 @@ struct PersonStub{
     name: String,
 }
 
+
+#[derive(Serialize, FromRow)]
+#[serde(rename_all = "camelCase")]
+struct PersonStubWithRating{
+    id: Uuid,
+    name: String,
+    avg_rating: Option<f64>,
+    rating_count: Option<i64>,
+}
+
 #[derive(Serialize)]
 struct MovieStub{
     id: Uuid,
@@ -333,7 +367,7 @@ struct NightDetails{
     description: Option<String>,
     time: DateTime<Utc>,
     movie: MovieStub,
-    persons: Vec<PersonStub>
+    persons: Vec<PersonStubWithRating>
 }
 
 async fn get_night_details(
@@ -347,7 +381,7 @@ async fn get_night_details(
     };
 
     // Fetch persons
-    let persons = sqlx::query_as!(PersonStub, "SELECT persons.name, persons.id FROM movie_views JOIN persons ON persons.id = movie_views.person_id WHERE night_id=$1", id)
+    let persons = sqlx::query_as!(PersonStubWithRating, "SELECT persons.name, persons.id, AVG(ratings.value) AS avg_rating, COUNT(ratings.id) AS rating_count FROM movie_views JOIN persons ON persons.id = movie_views.person_id JOIN ratings ON ratings.movie_view_id=movie_views.id WHERE night_id=$1 GROUP BY persons.id", id)
         .fetch_all(&state.db_pool)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;

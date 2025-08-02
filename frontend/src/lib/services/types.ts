@@ -12,6 +12,13 @@ export interface Person{
     id: string
 }
 
+export interface PersonWithRatings{
+    name: string
+    id: string
+    avgRating: number,
+    ratingCount: number,
+}
+
 export interface PersonDetails{
     name: string
     id: string
@@ -22,6 +29,7 @@ export interface Night{
     id: string
     time: Date
     movie?: Movie
+    avgRating?: number
 }
 
 export interface NightDetails{
@@ -29,7 +37,7 @@ export interface NightDetails{
     description?: string
     time: Date
     movie: Movie
-    persons: Array<Person>
+    persons: Array<PersonWithRatings>
 }
 
 export interface MovieDetails{
@@ -40,4 +48,5 @@ export interface MovieDetails{
     description?: string
     yearOfPublication?: number
     nights: Array<Night>
+    avgRating: number
 }

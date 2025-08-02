@@ -56,7 +56,6 @@
         let d = description == "" ? null : description;
         let viewIds = await postNight(movie!!, d, people.map(p => p.id));
 
-        console.log(viewIds)
         // Now, post the ratings
         for(let p of people){
             let viewId = viewIds.get(p.id)!!;

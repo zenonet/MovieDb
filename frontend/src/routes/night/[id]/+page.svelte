@@ -18,14 +18,10 @@
 
 <div class="list">
 {#each night.persons as person}
-    <a href={`/person/${person.id}`}>{person.name}</a>
+    <a href={`/person/${person.id}`}>{person.name} (rated: {person.avgRating}{(person.ratingCount > 1 ? `, based on ${person.ratingCount} ratings` : "")})</a>
 {/each}
 </div>
 
 {#if night.persons.length == 1}
 <p>Pretty lonely, huh? I am here for you :)</p>
 {/if}
-
-<pre>
-    {JSON.stringify(night)}
-</pre>
