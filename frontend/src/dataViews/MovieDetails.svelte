@@ -39,7 +39,9 @@
         <img src={movie.coverUrl} alt={`Movie cover of ${movie.name}`} height="400px">
     {/if}
 
-    Average Rating: {movie.avgRating.toFixed(2)}
+    {#if movie.avgRating}
+        Average Rating: {movie.avgRating!!.toFixed(2)}
+    {/if}
     <h3>Movie nights</h3>
     
     <div class="list">

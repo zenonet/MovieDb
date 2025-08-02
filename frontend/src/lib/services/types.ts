@@ -48,5 +48,5 @@ export interface MovieDetails{
     description?: string
     yearOfPublication?: number
     nights: Array<Night>
-    avgRating: number
+    avgRating?: number
 }

@@ -158,7 +158,7 @@ struct MovieDetails{
     description: Option<String>,
     year_of_publication: Option<i32>,
     nights: Vec<NigthStubWithRating>,
-    avg_rating: f64,
+    avg_rating: Option<f64>,
 }
 
 async fn get_movie_details(
@@ -200,7 +200,7 @@ SELECT AVG(ratings.value) FROM ratings
 JOIN movie_views ON ratings.movie_view_id=movie_views.id
 JOIN nights ON nights.id=movie_views.night_id
 WHERE movie_id=$1
-", id).fetch_one(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?.unwrap();
+", id).fetch_one(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let details = MovieDetails{
         name: movie.name,
