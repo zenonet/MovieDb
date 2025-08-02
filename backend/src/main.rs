@@ -1,10 +1,7 @@
-use std::{collections::HashMap, fs, sync::Arc, time::Duration};
+use std::{collections::HashMap, fs, ops::RemAssign, sync::Arc, time::Duration};
 
 use axum::{
-    Json, Router,
-    extract::{Path, Query, State},
-    http::StatusCode,
-    routing::{get, post},
+    extract::{Path, Query, State}, http::StatusCode, routing::{delete, get, post}, Json, Router
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -65,6 +62,9 @@ async fn main() {
         .route("/person", get(get_persons))
         .route("/person/{id}", get(get_person_details))
         .route("/rating", post(post_rating))
+        .route("/watchlist", post(create_watchlist))
+        .route("/watchlist/{id}/", get(get_watchlist).post(add_to_watchlist))
+        .route("/watchlist/{id}/{idx}", delete(remove_from_watchlist))
         .layer(
             CorsLayer::new()
                 .allow_origin([
@@ -470,4 +470,112 @@ async fn post_rating(
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok((StatusCode::CREATED, rating_id.to_string()))
+}
+
+
+#[derive(Deserialize)]
+struct NewWatchlist{
+    name: String,
+    description: Option<String>,
+    owner: Option<Uuid>
+}
+
+async fn create_watchlist(
+    State(state): State<Arc<AppState>>,
+    Json(new_watchlist): Json<NewWatchlist>
+) -> Result<String, (StatusCode, String)>{
+
+    let id = Uuid::new_v4();
+    sqlx::query!("INSERT INTO watchlists (id,name,description,owner) VALUES ($1,$2,$3,$4)",
+        id,
+        new_watchlist.name,
+        new_watchlist.description,
+        new_watchlist.owner
+    ).execute(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(id.to_string())
+}
+
+#[derive(Deserialize)]
+struct NewWatchlistEntry{
+    movie: Uuid,
+    idx: Option<i32>,
+}
+
+async fn add_to_watchlist(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<Uuid>,
+    Json(entry): Json<NewWatchlistEntry>
+) -> Result<(), (StatusCode, String)>{
+
+    if let Some(idx) = entry.idx{
+        // TODO: create unique constraint for watchlist_id and idx
+        sqlx::query!("INSERT INTO watchlist_entries (watchlist_id, movie_id, idx) VALUES ($1,$2,$3)",
+            id,
+            entry.movie,
+            entry.idx
+        ).execute(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    }else{
+        let idx = sqlx::query_scalar!("
+WITH next_idx AS (
+    SELECT coalesce(max(idx)+1, 0) AS i FROM watchlist_entries WHERE watchlist_id = '38e869d4-4d13-4a3f-8bc6-ac64a3a8a0b5'
+)
+INSERT INTO watchlist_entries (movie_id, watchlist_id, idx) SELECT '3ddf0f16-736c-4ae6-abd2-7133a91e640d', '38e869d4-4d13-4a3f-8bc6-ac64a3a8a0b5', next_idx.i FROM next_idx RETURNING idx;        
+        ").fetch_one(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    
+    }
+
+
+    Ok(())
+}
+
+
+#[derive(Serialize)]
+struct WatchlistEntry {
+    movie: MovieStub,
+    idx: i32
+}
+
+#[derive(Serialize)]
+struct WatchlistDetails{
+    name: String,
+    description: Option<String>,
+    // TODO: add owner here
+    entries: Vec<WatchlistEntry>
+}
+
+async fn get_watchlist(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<Uuid>
+) -> Result<Json<WatchlistDetails>, (StatusCode, String)>{
+    let detes = sqlx::query!("SELECT * FROM watchlists WHERE id=$1", id).fetch_optional(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let Some(detes) = detes else{
+        return Err((StatusCode::NOT_FOUND, String::from("No watchlist with that id exists")));
+    };
+
+    let entries = sqlx::query!("SELECT movie_id, movies.name AS movie_name, idx FROM watchlist_entries JOIN movies ON movies.id=watchlist_entries.movie_id WHERE watchlist_id=$1", id).fetch_all(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(WatchlistDetails{
+        name: detes.name,
+        description: detes.description,
+        entries: entries.into_iter().map(|e| WatchlistEntry{
+            movie: MovieStub { id: e.movie_id, name: e.movie_name },
+            idx: e.idx
+        }).collect::<Vec<WatchlistEntry>>()
+    }))
+}
+
+async fn remove_from_watchlist(
+    State(state): State<Arc<AppState>>,
+    Path((id,idx)): Path<(Uuid, i32)>,
+) -> Result<(), (StatusCode, String)>{
+
+    let res = sqlx::query!("DELETE FROM watchlist_entries WHERE watchlist_id=$1 AND idx=$2", id, idx).execute(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    
+    match res.rows_affected() {
+        0 => Err((StatusCode::NOT_FOUND, "No watchlist entry deleted".to_owned())),
+        1 => Ok(()),
+        _ => Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("We fucked up. More than one row was removed")))
+    }
 }
