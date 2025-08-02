@@ -16,9 +16,11 @@
 
 <h3>Who was watching?</h3>
 
+<div class="list">
 {#each night.persons as person}
     <a href={`/person/${person.id}`}>{person.name}</a>
 {/each}
+</div>
 
 {#if night.persons.length == 1}
 <p>Pretty lonely, huh? I am here for you :)</p>

@@ -50,7 +50,7 @@
     {/if}
     <h3>Movie nights</h3>
     
-    <div>
+    <div class="list">
         {#each movie.nights as night}
             <a href={`/night/${night.id}`}>{new Date(night.time).toLocaleDateString(window.navigator.language)}</a>
         {/each}
