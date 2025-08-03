@@ -9,19 +9,7 @@ services:
     ports:
         - 5432:5432
     volumes:
-        - pgdata:/var/lib/postgresql/data
-
-  pgadmin4:
-    image: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: zeno@zenonet.de
-      PGADMIN_DEFAULT_PASSWORD: whydoineedthis
-      PGADMIN_LISTEN_PORT: 80
-    ports:
-    - 8080:80
-    volumes:
-    - ./servers.json:/pgadmin4/servers.json
-
+        - pgdata:p
   api:
     image: zenonet/moviedbapi:1.0.0
     build:
