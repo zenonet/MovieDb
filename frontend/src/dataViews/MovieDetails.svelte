@@ -3,6 +3,7 @@
     import { getMovieById } from "$lib/services/movieService";
     import type { MovieDetails } from "$lib/services/types";
     import { onMount, untrack } from "svelte";
+    import WatchlistAdderPopup from "../WatchlistAdderPopup.svelte";
 
     let {movieId} = $props();
 
@@ -22,6 +23,7 @@
         fetchMovieDetails();
     });
 
+    let showWatchlistAdder = $state(false);
 
 </script>
 
@@ -31,7 +33,13 @@
     <h2>{movie.name}</h2>
 
     <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}>Create night</button>
-    
+    <button onclick={() => showWatchlistAdder = true}>Add to watchlist</button>
+
+
+    {#if showWatchlistAdder}
+        <WatchlistAdderPopup movie={movie} done={() => showWatchlistAdder = false}></WatchlistAdderPopup>
+    {/if}
+
     {#if movie.coverUrl}
         <img src={movie.coverUrl} alt={`Movie cover of ${movie.name}`} height="400px">
     {/if}

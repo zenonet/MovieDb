@@ -1,7 +1,9 @@
 <script lang="ts">
-    import type { Watchlist } from "$lib/services/types";
+    import { invalidate } from "$app/navigation";
+import type { WatchlistDetails } from "$lib/services/types";
+    import { removeFromWatchlist } from "$lib/services/watchlistService";
 
-    let { data }: { data: Watchlist } = $props();
+    let { data }: { data: WatchlistDetails } = $props();
     let watchlist = data;
 </script>
 
@@ -19,6 +21,7 @@
             <tr>
                 <td></td>
                 <td>Name</td>
+                <td></td>
             </tr>
         </thead>
         <tbody>
@@ -29,6 +32,12 @@
                         <a href={`/movie/${entry.movie.id}`}>
                             {entry.movie.name}
                         </a>
+                    </td>
+                    <td>
+                        <button onclick={async () => {
+                                await removeFromWatchlist(watchlist.id, entry.idx);
+                                await invalidate(`watchlist:${watchlist.id}`);
+                            } }>X</button>
                     </td>
                 </tr>
             {/each}

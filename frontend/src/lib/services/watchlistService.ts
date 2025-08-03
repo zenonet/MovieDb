@@ -36,6 +36,6 @@ export let addToWatchlist = async (watchlistId: string, movieId: string) => {
     return idx
 }
 
-export let removeFromWatchlist = async (watchlistId: string, idx: number) => {
-    apiClient.delete(`${watchlistId}/${idx}`)
+export let removeFromWatchlist = (watchlistId: string, idx: number) => {
+    return apiClient.delete(`${watchlistId}/${idx}`)
 }

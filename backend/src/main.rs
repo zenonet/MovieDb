@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, ops::RemAssign, sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use axum::{
     extract::{Path, Query, State}, http::StatusCode, routing::{delete, get, post}, Json, Router
@@ -506,7 +506,7 @@ async fn add_to_watchlist(
     State(state): State<Arc<AppState>>,
     Path(id): Path<Uuid>,
     Json(entry): Json<NewWatchlistEntry>
-) -> Result<(), (StatusCode, String)>{
+) -> Result<String, (StatusCode, String)>{
 
     if let Some(idx) = entry.idx{
         // TODO: create unique constraint for watchlist_id and idx
@@ -515,18 +515,16 @@ async fn add_to_watchlist(
             entry.movie,
             entry.idx
         ).execute(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        Ok(idx.to_string())
     }else{
         let idx = sqlx::query_scalar!("
 WITH next_idx AS (
-    SELECT coalesce(max(idx)+1, 0) AS i FROM watchlist_entries WHERE watchlist_id = '38e869d4-4d13-4a3f-8bc6-ac64a3a8a0b5'
+    SELECT coalesce(max(idx)+1, 0) AS i FROM watchlist_entries WHERE watchlist_id = $1
 )
-INSERT INTO watchlist_entries (movie_id, watchlist_id, idx) SELECT '3ddf0f16-736c-4ae6-abd2-7133a91e640d', '38e869d4-4d13-4a3f-8bc6-ac64a3a8a0b5', next_idx.i FROM next_idx RETURNING idx;        
-        ").fetch_one(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    
+INSERT INTO watchlist_entries (movie_id, watchlist_id, idx) SELECT $2, $1, next_idx.i FROM next_idx RETURNING idx;        
+        ", id, entry.movie).fetch_one(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        Ok(idx.to_string())
     }
-
-
-    Ok(())
 }
 
 
@@ -539,6 +537,7 @@ struct WatchlistEntry {
 #[derive(Serialize)]
 struct WatchlistDetails{
     name: String,
+    id: Uuid,
     description: Option<String>,
     // TODO: add owner here
     entries: Vec<WatchlistEntry>
@@ -554,10 +553,11 @@ async fn get_watchlist(
         return Err((StatusCode::NOT_FOUND, String::from("No watchlist with that id exists")));
     };
 
-    let entries = sqlx::query!("SELECT movie_id, movies.name AS movie_name, idx FROM watchlist_entries JOIN movies ON movies.id=watchlist_entries.movie_id WHERE watchlist_id=$1", id).fetch_all(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let entries = sqlx::query!("SELECT movie_id, movies.name AS movie_name, idx FROM watchlist_entries JOIN movies ON movies.id=watchlist_entries.movie_id WHERE watchlist_id=$1 ORDER BY idx", id).fetch_all(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(WatchlistDetails{
         name: detes.name,
+        id,
         description: detes.description,
         entries: entries.into_iter().map(|e| WatchlistEntry{
             movie: MovieStub { id: e.movie_id, name: e.movie_name },
