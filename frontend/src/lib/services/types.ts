@@ -55,8 +55,12 @@ export interface WatchlistEntry{
     movie: Movie,
     idx: number
 }
-
 export interface Watchlist{
+    name: string,
+    id: string,
+}
+
+export interface WatchlistDetails{
     name: string
     id: string
     description?: string,

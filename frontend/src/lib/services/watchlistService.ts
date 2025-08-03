@@ -1,6 +1,6 @@
 import { PUBLIC_API_URL } from "$env/static/public";
 import axios from "axios";
-import type { Watchlist } from "./types";
+import type { Watchlist, WatchlistDetails } from "./types";
 
 const apiClient = axios.create({
     baseURL: PUBLIC_API_URL + "/watchlist"
@@ -15,10 +15,15 @@ export let createWatchlist = async (name: string) => {
     return id;
 }
 
+export let getWatchlists = async () => {
+    const resp = await apiClient.get("");
+    const watchlists = resp.data as Array<Watchlist>;
+    return watchlists;
+}
 
 export let getWatchlist = async (id: string) => {
     const resp = await apiClient.get(`${id}/`);
-    const watchlist = resp.data as Watchlist;
+    const watchlist = resp.data as WatchlistDetails;
     return watchlist;
 };
 

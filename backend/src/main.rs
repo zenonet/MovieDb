@@ -62,7 +62,7 @@ async fn main() {
         .route("/person", get(get_persons))
         .route("/person/{id}", get(get_person_details))
         .route("/rating", post(post_rating))
-        .route("/watchlist", post(create_watchlist))
+        .route("/watchlist", post(create_watchlist).get(get_watchlists))
         .route("/watchlist/{id}/", get(get_watchlist).post(add_to_watchlist))
         .route("/watchlist/{id}/{idx}", delete(remove_from_watchlist))
         .layer(
@@ -578,4 +578,18 @@ async fn remove_from_watchlist(
         1 => Ok(()),
         _ => Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("We fucked up. More than one row was removed")))
     }
+}
+
+#[derive(Serialize)]
+struct WatchlistStub{
+    name: String,
+    id: Uuid,
+}
+
+async fn get_watchlists(
+    State(state): State<Arc<AppState>>
+) -> Result<Json<Vec<WatchlistStub>>, (StatusCode, String)>{
+    let watchlists = sqlx::query_as!(WatchlistStub, "SELECT id, name FROM watchlists").fetch_all(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(watchlists))
 }
