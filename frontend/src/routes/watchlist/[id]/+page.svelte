@@ -1,7 +1,9 @@
 <script lang="ts">
     import { invalidate } from "$app/navigation";
-import type { WatchlistDetails } from "$lib/services/types";
-    import { removeFromWatchlist } from "$lib/services/watchlistService";
+    import { getMoviesByName } from "$lib/services/movieService";
+    import type { WatchlistDetails } from "$lib/services/types";
+    import { addToWatchlist, removeFromWatchlist } from "$lib/services/watchlistService";
+    import FetchingCompletionSearch from "../../../components/FetchingCompletionSearch.svelte";
 
     let { data }: { data: WatchlistDetails } = $props();
     let watchlist = data;
@@ -13,6 +15,20 @@ import type { WatchlistDetails } from "$lib/services/types";
     {#if watchlist.description}
         <p>{watchlist.description}</p>
     {/if}
+
+    <div>
+        <!-- Movie adder -->
+        <FetchingCompletionSearch
+            fetchItems={(s) => getMoviesByName(s, 0).then((s) => s.data)}
+            placeholder="Search for a movie"
+            hideCompletionsOnFocusLoss={true}
+            resolveName={i => i.name}
+            completionClicked={async (movie) => {
+                await addToWatchlist(watchlist.id, movie.id)
+                await invalidate(`watchlist:${watchlist.id}`)
+            }}
+        />
+    </div>
 
     <h2>Movies:</h2>
 
@@ -34,10 +50,15 @@ import type { WatchlistDetails } from "$lib/services/types";
                         </a>
                     </td>
                     <td>
-                        <button onclick={async () => {
-                                await removeFromWatchlist(watchlist.id, entry.idx);
+                        <button
+                            onclick={async () => {
+                                await removeFromWatchlist(
+                                    watchlist.id,
+                                    entry.idx,
+                                );
                                 await invalidate(`watchlist:${watchlist.id}`);
-                            } }>X</button>
+                            }}>X</button
+                        >
                     </td>
                 </tr>
             {/each}
