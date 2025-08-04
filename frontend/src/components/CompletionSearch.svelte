@@ -5,7 +5,7 @@
     interface Props{
         placeholder: string,
         items: any[],
-        nameResolver: (item: any) => string,
+        resolveName: (item: any) => string,
         completionClicked: (item:any) => void,
     }
 
@@ -17,7 +17,7 @@
 
     function updateCompletions(){
         completions = params.items.filter(item => {
-            let name = params.nameResolver(item);
+            let name = params.resolveName(item);
             return name.includes(searchVal);
         });
     }
@@ -36,7 +36,7 @@
     <div id="completionsBox">
         {#each completions as completion}
             <button onclick={() => params.completionClicked(completion)}>
-                {params.nameResolver(completion)}
+                {params.resolveName(completion)}
             </button>
         {/each}
     </div>

@@ -2,7 +2,7 @@
     import type { Movie, Watchlist } from "$lib/services/types";
     import { addToWatchlist, getWatchlists } from "$lib/services/watchlistService";
     import { onMount } from "svelte";
-    import CompletionSearch from "./CompletionSearch.svelte";
+    import CompletionSearch from "./components/CompletionSearch.svelte";
 
     let { movie, done }: { movie: Movie, done: () => void } = $props();
     let watchlists: Watchlist[] = $state([]);
@@ -21,7 +21,7 @@
 <div>
     <CompletionSearch
         items={watchlists}
-        nameResolver={(w) => w.name}
+        resolveName={w => w.name}
         placeholder="Search for watchlists"
         completionClicked={completionClicked}
     />
