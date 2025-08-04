@@ -1,6 +1,12 @@
 import { PUBLIC_API_URL } from "$env/static/public";
-import { getNightById } from "$lib/services/movieService.js";
+import { getNightById, getRatingsForNight } from "$lib/services/movieService.js";
 
 export const load = async ({ params }) => {
-    return await getNightById(params.id)
+    const details = await getNightById(params.id);
+    const ratings = await getRatingsForNight(params.id);
+
+    return {
+        details: details.data,
+        ratings: ratings.data,
+    }
 };

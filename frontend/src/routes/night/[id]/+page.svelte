@@ -1,6 +1,9 @@
 <script lang="ts">
-    let {data} = $props();
-    let night = $derived(data.data);
+    import type { NightDetails, Rating } from "$lib/services/types";
+
+    let {data}: {data:{details: NightDetails, ratings: Rating[]}} = $props();
+    let night = $derived(data.details);
+    let ratings = $derived(data.ratings);
 </script>
 
 <h1>Night of {new Date(night.time).toLocaleString(navigator.language)}</h1>
@@ -25,3 +28,26 @@
 {#if night.persons.length == 1}
 <p>Pretty lonely, huh? I am here for you :)</p>
 {/if}
+
+<h3>Ratings</h3>
+
+<table>
+    <thead>
+        <tr>
+            <td>Person</td>
+            <td>Rating</td>
+            <td>Date</td>
+        </tr>
+    </thead>
+    <tbody>
+        {#each ratings as rating}
+            <tr>
+                <td>
+                    <a href={`/person/${rating.person.id}`}>{rating.person.name}</a>
+                </td>
+                <td>{rating.value.toFixed()}</td>
+                <td>{rating.time.toLocaleString(navigator.language)}</td>
+            </tr>
+        {/each}
+    </tbody>
+</table>

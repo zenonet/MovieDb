@@ -59,6 +59,7 @@ async fn main() {
         .route("/movie", post(post_movie).get(get_movies))
         .route("/night", post(post_night))
         .route("/night/{id}", get(get_night_details))
+        .route("/night/{id}/ratings", get(get_ratings_for_night))
         .route("/person", get(get_persons))
         .route("/person/{id}", get(get_person_details))
         .route("/rating", post(post_rating))
@@ -399,6 +400,36 @@ async fn get_night_details(
 
 
 #[derive(Serialize)]
+struct Rating{
+    time: DateTime<Utc>,
+    value: f64,
+    person: PersonStub
+}
+
+async fn get_ratings_for_night(
+    State(state): State<Arc<AppState>>,
+    Path(night_id): Path<Uuid>
+) -> Result<Json<Vec<Rating>>, (StatusCode, String)>{
+    let ratings = sqlx::query!("
+SELECT ratings.id AS rating_id, ratings.time, ratings.value, p.id AS person_id, p.name AS person_name FROM ratings
+JOIN public.movie_views mv on ratings.movie_view_id = mv.id
+JOIN public.persons p on mv.person_id = p.id
+WHERE night_id=$1
+ORDER BY ratings.time;
+    ", night_id).fetch_all(&state.db_pool).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let ratings = ratings.into_iter().map(|r| {
+        Rating{
+            time: r.time,
+            value: r.value.unwrap(),
+            person: PersonStub { id: r.person_id, name: r.person_name }
+        }
+    }).collect::<Vec<Rating>>();
+
+    Ok(Json(ratings))
+}
+
+#[derive(Serialize)]
 struct NightStubWithMovie{
     #[serde(flatten)]
     stub: NightStub,
@@ -471,7 +502,6 @@ async fn post_rating(
 
     Ok((StatusCode::CREATED, rating_id.to_string()))
 }
-
 
 #[derive(Deserialize)]
 struct NewWatchlist{

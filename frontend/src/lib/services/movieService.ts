@@ -1,6 +1,6 @@
 import { PUBLIC_API_URL } from "$env/static/public";
 import axios from "axios";
-import type { Movie, MovieDetails, NightDetails, Person, PersonDetails } from "./types";
+import type { Movie, MovieDetails, NightDetails, Person, PersonDetails, Rating } from "./types";
 
 const apiClient = axios.create({
     baseURL: PUBLIC_API_URL
@@ -17,6 +17,10 @@ export let getMoviesByName = (name: string, page:number = 0) => {
 
 export let getNightById = (id: string) => {
     return apiClient.get<NightDetails>(`night/${id}`)
+}
+
+export let getRatingsForNight = (nightId: string) => {
+    return apiClient.get<Rating[]>(`night/${nightId}/ratings`);
 }
 
 export let getPersonById = (id: string) => apiClient.get<PersonDetails>(`person/${id}`);

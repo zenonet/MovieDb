@@ -66,3 +66,9 @@ export interface WatchlistDetails{
     description?: string,
     entries: Array<WatchlistEntry>
 }
+
+export interface Rating{
+    person: Person
+    value: number
+    time: Date
+}
