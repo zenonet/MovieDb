@@ -29,7 +29,7 @@
 
 
 {#if movie}
-<div style="display: flex; flex-direction: column; align-items: flex-start; flex: 1">
+<div style="display: flex; flex-direction: column; align-items: flex-start; flex: 1; overflow: auto">
     <h2>{movie.name}</h2>
 
     <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}>Create night</button>
@@ -44,9 +44,18 @@
         <img src={movie.coverUrl} alt={`Movie cover of ${movie.name}`} height="400px">
     {/if}
 
+    {#if movie.duration}
+    Duration: {movie.duration}min
+    {/if}
+
+    {#if movie.description}
+    <p style="font-size: 0.8em">{movie.description}</p>
+    {/if}
+
     {#if movie.avgRating}
         Average Rating: {movie.avgRating!!.toFixed(2)}
     {/if}
+
     <h3>Movie nights</h3>
     
     <div class="list">
@@ -68,7 +77,12 @@
     {/if}
 
     {#if movie.isMementoImport}
-        <span style="font-weight: lighter;">This movie was imported from a memento database</span>
+        <span style="font-weight: light;">This movie was imported from a memento database</span>
+    {/if}
+
+    {#if movie.actors}
+        <h2>Cast</h2>
+        <pre>{movie.actors}</pre>
     {/if}
 </div>
 {/if}
