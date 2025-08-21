@@ -20,7 +20,7 @@
 
 </script>
 
-<div>
+<div style="display: flex; flex-direction:column;">
     <input placeholder="Search..." bind:value={searchVal} oninput={fetchMovies}>
 
     <div class="movie-list">
@@ -46,6 +46,7 @@
         display: flex;
         flex-direction: column;
         overflow: auto;
+        flex: 1;
 
         max-height: 100%;
 
