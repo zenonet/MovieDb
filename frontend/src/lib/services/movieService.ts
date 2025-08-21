@@ -10,8 +10,8 @@ export let getMovieById = (id: string) => {
     return apiClient.get<MovieDetails>(`/movie/${id}`)
 };
 
-export let getMoviesByName = (name: string, page:number = 0) => {
-    return apiClient.get<Movie[]>(`/movie?name=${encodeURI(name)}&page=${page}&per_page=50`)
+export let getMoviesByName = (name: string, page:number = 0, per_page:number = 50) => {
+    return apiClient.get<Movie[]>(`/movie?name=${encodeURI(name)}&page=${page}&per_page=${per_page}`)
 }
 
 
