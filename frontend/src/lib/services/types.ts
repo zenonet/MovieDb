@@ -50,7 +50,10 @@ export interface MovieDetails{
     description?: string
     yearOfPublication?: number
     nights: Array<Night>
-    avgRating?: number
+    avgRating?: number,
+    actors?: string,
+    // Runtime in minutes
+    duration?: number,
 }
 
 export interface WatchlistEntry{
