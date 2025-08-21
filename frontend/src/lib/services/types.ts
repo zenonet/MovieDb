@@ -45,6 +45,8 @@ export interface MovieDetails{
     name: string,
     tagline?: string,
     coverUrl?: string
+    trailerUrl?: string,
+    isMementoImport: boolean
     description?: string
     yearOfPublication?: number
     nights: Array<Night>

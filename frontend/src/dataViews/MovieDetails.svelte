@@ -57,5 +57,18 @@
             This movie was never presented yet
         {/if}
     </div>
+
+    <h3>More Details</h3>
+    {#if movie.trailerUrl}
+        <a href={movie.trailerUrl}>Trailer</a>
+    {/if}
+    
+    {#if movie.tagline}
+        <span style="font-size: 1.2em; font-style: italic;">{movie.tagline}</span>
+    {/if}
+
+    {#if movie.isMementoImport}
+        <span style="font-weight: lighter;">This movie was imported from a memento database</span>
+    {/if}
 </div>
 {/if}
