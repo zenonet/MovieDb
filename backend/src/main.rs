@@ -158,6 +158,8 @@ struct MovieDetails{
     cover_url: Option<String>,
     description: Option<String>,
     year_of_publication: Option<i32>,
+    trailer_url: Option<String>,
+    is_memento_import: bool,
     nights: Vec<NigthStubWithRating>,
     avg_rating: Option<f64>,
 }
@@ -209,7 +211,9 @@ WHERE movie_id=$1
         nights,
         tagline: movie.tagline,
         cover_url: movie.cover_url,
-        description: movie.description,
+        trailer_url: movie.trailer_url,
+        is_memento_import: movie.memento_id.is_some(),
+        description: movie.overview,
         year_of_publication: movie.year_of_publication,
         avg_rating
     };
