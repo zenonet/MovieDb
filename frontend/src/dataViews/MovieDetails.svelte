@@ -29,7 +29,7 @@
 
 
 {#if movie}
-<div style="display: flex; flex-direction: column; align-items: flex-start">
+<div style="display: flex; flex-direction: column; align-items: flex-start; flex: 1">
     <h2>{movie.name}</h2>
 
     <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}>Create night</button>

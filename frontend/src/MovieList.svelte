@@ -45,6 +45,9 @@
         margin-top: 10px;
         display: flex;
         flex-direction: column;
+        overflow: auto;
+
+        max-height: 100%;
 
         gap: 10px;
     }

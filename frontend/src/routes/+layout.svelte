@@ -1,19 +1,28 @@
 <script lang="ts">
-    let {children} = $props();
+    let { children } = $props();
 </script>
 
-<nav>
-    <a href="/">Movies</a>
-    <a href="/watchlist">Watchlists</a>
-</nav>
+<div class="root">
+    <nav>
+        <a href="/">Movies</a>
+        <a href="/watchlist">Watchlists</a>
+    </nav>
 
-{@render children()}
-
+    <div style="flex: 1; overflow-y: hidden; padding: 15px">
+        {@render children()}
+    </div>
+</div>
 
 <style>
-    nav{
+    nav {
         padding: 15px;
         display: flex;
         gap: 10px;
+    }
+
+    .root{
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
     }
 </style>

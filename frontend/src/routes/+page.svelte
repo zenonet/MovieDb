@@ -20,5 +20,6 @@
     .side-by-side-layout{
         display: flex;
         flex-direction: row;
+        height: 100%;
     }
 </style>
