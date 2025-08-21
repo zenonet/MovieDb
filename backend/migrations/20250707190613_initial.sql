@@ -7,7 +7,7 @@ CREATE TABLE movies(
 
 CREATE TABLE persons(
     id uuid PRIMARY KEY,
-    name VARCHAR(128)
+    name VARCHAR(128) UNIQUE
 );
 
 CREATE TABLE nights(
