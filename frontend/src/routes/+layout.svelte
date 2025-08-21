@@ -6,6 +6,7 @@
     <nav>
         <a href="/">Movies</a>
         <a href="/watchlist">Watchlists</a>
+        <a href="/person">People</a>
     </nav>
 
     <div style="flex: 1; overflow-y: hidden; padding: 15px">
