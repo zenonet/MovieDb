@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use axum::{
-    extract::{Path, Query, State}, http::StatusCode, routing::{delete, get, post}, Json, Router
+    extract::{Path, Query, State}, http::StatusCode, response::IntoResponse, routing::{delete, get, post}, Json, Router
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -69,6 +69,7 @@ async fn main() {
         .layer(
             CorsLayer::new()
                 .allow_origin([
+                    "http://192.168.1.31:5173".parse().unwrap(),   // vite dev server
                     "http://localhost:80".parse().unwrap(),   // vite dev server
                     "http://localhost:5173".parse().unwrap(), // rsbuild dev server
                     "https://zenonet.de".parse().unwrap(),
@@ -162,6 +163,9 @@ struct MovieDetails{
     is_memento_import: bool,
     nights: Vec<NigthStubWithRating>,
     avg_rating: Option<f64>,
+
+    actors: Option<String>,
+    duration: Option<i32>,
 }
 
 async fn get_movie_details(
@@ -215,7 +219,9 @@ WHERE movie_id=$1
         is_memento_import: movie.memento_id.is_some(),
         description: movie.overview,
         year_of_publication: movie.year_of_publication,
-        avg_rating
+        avg_rating,
+        actors: movie.actors,
+        duration: movie.runtime
     };
 
     Ok(Json(details))
