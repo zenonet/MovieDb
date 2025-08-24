@@ -467,7 +467,7 @@ async fn get_person_details(
     };
 
     // Fetch last nights
-    let latest_nights = sqlx::query!("SELECT night_id, nights.time, movies.name as movie_name, movies.id as movie_id FROM movie_views JOIN nights ON movie_views.night_id = nights.id JOIN movies ON nights.movie_id = movies.id WHERE movie_views.person_id = $1 ORDER BY nights.time LIMIT 10", id)
+    let latest_nights = sqlx::query!("SELECT night_id, nights.time, movies.name as movie_name, movies.id as movie_id FROM movie_views JOIN nights ON movie_views.night_id = nights.id JOIN movies ON nights.movie_id = movies.id WHERE movie_views.person_id = $1 ORDER BY nights.time DESC LIMIT 20", id)
     .fetch_all(&state.db_pool)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
