@@ -31,25 +31,3 @@
         {/each}
     </div>
 </div>
-
-<style>
-    .movie-list-entry{
-        background: var(--background);
-
-        border: none;
-		text-align: left;
-        font-size: 1.2em;
-    }
-
-    .movie-list{
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-        overflow: auto;
-        flex: 1;
-
-        max-height: 100%;
-
-        gap: 10px;
-    }
-</style>

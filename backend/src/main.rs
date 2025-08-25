@@ -57,6 +57,7 @@ async fn main() {
         )
         .route("/movie/{id}", get(get_movie_details))
         .route("/movie", post(post_movie).get(get_movies))
+        .route("/movie/byActor", get(get_movies_with_actor))
         .route("/night", post(post_night))
         .route("/night/{id}", get(get_night_details))
         .route("/night/{id}/ratings", get(get_ratings_for_night))
@@ -257,6 +258,35 @@ async fn get_movies(
     Ok(Json(res))
 }
 
+async fn get_movies_with_actor(
+    State(state): State<Arc<AppState>>,
+    Query(args): Query<MovieFetchArgs>
+) -> Result<Json<Vec<Movie>>, (StatusCode, String)>{
+        let mut query = String::from("SELECT * FROM movies");
+
+    if args.name.is_some() {
+        query.push_str(" WHERE UPPER(actors) LIKE $1");
+    }
+
+    query.push_str(" LIMIT $2 OFFSET $3");
+
+    let mut q = sqlx::query_as::<_, Movie>(&query);
+
+    if let Some(name) = args.name {
+        q = q.bind(format!("%{}%", name.to_uppercase()));
+    }
+
+    q = q
+        .bind(args.per_page as i32)
+        .bind((args.page * args.per_page) as i32);
+
+
+    let res = q.fetch_all(&state.db_pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(res))
+}
 
 async fn get_persons(
     State(state): State<Arc<AppState>>,

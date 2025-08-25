@@ -14,6 +14,9 @@ export let getMoviesByName = (name: string, page:number = 0, per_page:number = 5
     return apiClient.get<Movie[]>(`/movie?name=${encodeURI(name)}&page=${page}&per_page=${per_page}`)
 }
 
+export let getMoviesWithActor = (name: string, page:number = 0, per_page:number = 50) => {
+    return apiClient.get<Movie[]>(`/movie/byActor?name=${encodeURI(name)}&page=${page}&per_page=${per_page}`)
+}
 
 export let getNightById = (id: string) => {
     return apiClient.get<NightDetails>(`night/${id}`)
