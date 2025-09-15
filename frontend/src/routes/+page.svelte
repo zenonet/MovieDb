@@ -14,7 +14,7 @@
         pageSize={1000}
     />
     </div>
-
+    <div style="width: 10px;"></div>
     {#if selectedMovieInList.selectedId !== ""} 
     <div style="flex: 3; overflow: auto">
         <MovieDetails movieId={selectedMovieInList.selectedId}/>

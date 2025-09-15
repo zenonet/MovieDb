@@ -5,6 +5,6 @@
     let id = page.params.id;
 </script>
 
-<div style="overflow: auto; display: flex; flex-direction: column;">
+<div style=" display: flex; flex-direction: column;">
 <MovieDetails movieId={id}/>
 </div>
