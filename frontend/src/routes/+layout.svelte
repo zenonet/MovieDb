@@ -10,7 +10,7 @@
         <a href="/person">People</a>
     </nav>
 
-    <div style="flex: 1; overflow-y: hidden; padding: 15px">
+    <div style="flex: 1; padding: 15px; flex-shrink: 1; min-height: 0">
         {@render children()}
     </div>
 </div>

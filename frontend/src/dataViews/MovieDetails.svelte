@@ -39,7 +39,7 @@
 
 {#if movie}
     <div
-        style="display: flex; flex-direction: column; align-items: flex-start; flex: 1; overflow: auto"
+        style="display: flex; flex-direction: column; align-items: flex-start; flex: 1"
     >
         {#if movie.coverUrl}
             <img

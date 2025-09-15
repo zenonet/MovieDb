@@ -20,10 +20,10 @@
 
 </script>
 
-<div style="display: flex; flex-direction:column;">
+<div style="display: flex; flex-direction:column;max-height: 100%">
     <input placeholder="Search..." bind:value={searchVal} oninput={fetchMovies}>
 
-    <div class="movie-list">
+    <div class="movie-list" style="flex: 1;min-height:0; overflow: auto">
         {#each movies as movie}
             <button class="movie-list-entry" onclick={() => onMovieClicked(movie)}>
                 { movie.name }

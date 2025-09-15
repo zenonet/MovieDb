@@ -6,15 +6,19 @@
 </script>
 
 <div class="side-by-side-layout">
+    <div style="flex: 1">
     <MovieList
         onMovieClicked={(movie) => {
             selectedMovieInList.set(movie.id)
         }}
         pageSize={1000}
     />
+    </div>
 
     {#if selectedMovieInList.selectedId !== ""} 
+    <div style="flex: 3; overflow: auto">
         <MovieDetails movieId={selectedMovieInList.selectedId}/>
+    </div>
     {/if}
 </div>
 
@@ -22,6 +26,8 @@
     .side-by-side-layout{
         display: flex;
         flex-direction: row;
-        height: 100%;
+        max-height: 100%;
+        overflow-y: hidden;
+        flex: 1;
     }
 </style>
