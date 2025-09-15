@@ -1,5 +1,6 @@
 <script lang="ts">
     import { invalidate } from "$app/navigation";
+    import { base } from "$app/paths";
     import { getMoviesByName } from "$lib/services/movieService";
     import type { WatchlistDetails } from "$lib/services/types";
     import { addToWatchlist, removeFromWatchlist } from "$lib/services/watchlistService";
@@ -45,7 +46,7 @@
                 <tr>
                     <td>{entry.idx}</td>
                     <td>
-                        <a href={`/movie/${entry.movie.id}`}>
+                        <a href={`${base}/movie/${entry.movie.id}`}>
                             {entry.movie.name}
                         </a>
                     </td>

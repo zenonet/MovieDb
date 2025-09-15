@@ -1,5 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { base } from "$app/paths";
     import { page } from "$app/state";
     import { getMovieById, getPersonsByName, postNight, postRating } from "$lib/services/movieService";
     import type { Movie, Person } from "$lib/services/types";
@@ -62,7 +63,7 @@
             let viewId = viewIds.get(p.id)!!;
 
             await postRating(viewId, p.rating!!);
-            goto("/");
+            goto(base);
         }
         console.log("Night created successfully!")
     }

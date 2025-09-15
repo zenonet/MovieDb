@@ -4,6 +4,7 @@
     import type { MovieDetails } from "$lib/services/types";
     import { onMount, untrack } from "svelte";
     import WatchlistAdderPopup from "../WatchlistAdderPopup.svelte";
+    import { base } from "$app/paths";
 
     let { movieId } = $props();
 
@@ -57,7 +58,7 @@
         {/if}
 
         <div style="display: flex; gap: 10pt; margin-top: 20px; margin-bottom: 20px">
-            <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}
+            <button onclick={() => goto(`${base}/createNight?movieId=${movie!!.id}`)}
                 >Create night</button
             >
             <button onclick={() => (showWatchlistAdder = true)}
@@ -95,7 +96,7 @@
         
         <div class="list">
             {#each movie.nights as night}
-                <a href={`/night/${night.id}`}
+                <a href={`${base}/night/${night.id}`}
                     >{new Date(night.time).toLocaleDateString(
                         window.navigator.language,
                     )} (rated: {night.avgRating?.toFixed(2)})</a
@@ -131,7 +132,7 @@
                 {#each getActorList(movie.actors) as l}
                 <tr>
                     <td>
-                        <a href={`/actor/${encodeURI(l.actor)}`}
+                        <a href={`${base}/actor/${encodeURI(l.actor)}`}
                         >{l.actor}</a
                         >
                     </td>

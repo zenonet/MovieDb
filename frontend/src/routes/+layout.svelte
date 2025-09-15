@@ -1,13 +1,14 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import "$lib/app.css"
     let { children } = $props();
 </script>
 
 <div class="root">
     <nav>
-        <a href="/">Movies</a>
-        <a href="/watchlist">Watchlists</a>
-        <a href="/person">People</a>
+        <a href="{base}">Movies</a>
+        <a href="{base}/watchlist">Watchlists</a>
+        <a href="{base}/person">People</a>
     </nav>
 
     <div style="flex: 1; padding: 15px; flex-shrink: 1; min-height: 0">

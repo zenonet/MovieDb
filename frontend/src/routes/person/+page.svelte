@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { base } from "$app/paths";
     import type { Person } from "$lib/services/types";
 
     let { data }: {data: {persons: Person[]}} = $props();
@@ -10,6 +11,6 @@
 
 <div class="list">
     {#each persons as person}
-        <a href={`/person/${person.id}`}>{person.name}</a>
+        <a href={`${base}/person/${person.id}`}>{person.name}</a>
     {/each}
 </div>

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { base } from "$app/paths";
     import { page } from "$app/state";
 
     let { data } = $props();
@@ -12,7 +13,7 @@
     {#each movies as movie}
         <button
             class="movie-list-entry"
-            onclick={() => goto(`/movie/${movie.id}`)}
+            onclick={() => goto(`${base}/movie/${movie.id}`)}
         >
             {movie.name}
         </button>

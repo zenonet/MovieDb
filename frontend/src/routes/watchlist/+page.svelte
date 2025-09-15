@@ -1,5 +1,6 @@
 <script lang="ts">
     import { invalidate } from "$app/navigation";
+    import { base } from "$app/paths";
     import type { Watchlist } from "$lib/services/types";
     import { createWatchlist } from "$lib/services/watchlistService";
 
@@ -25,6 +26,6 @@
 
 <div class="list">
     {#each watchlists as watchlist}
-        <a href={`/watchlist/${watchlist.id}`}>{watchlist.name}</a>
+        <a href={`${base}/watchlist/${watchlist.id}`}>{watchlist.name}</a>
     {/each}
 </div>

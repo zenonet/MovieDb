@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { base } from '$app/paths';
+
     let { data } = $props();
     let person = $derived(data.data);
 </script>
@@ -10,7 +12,7 @@
 
     <div class="list">
         {#each person.latest_nights as night}
-            <a href={`/night/${night.id}`}
+            <a href={`${base}/night/${night.id}`}
                 >{night.movie!!.name} on {new Date(
                     night.time,
                 ).toLocaleDateString(navigator.language)}</a
