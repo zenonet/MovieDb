@@ -65,6 +65,10 @@
             />
         {/if}
 
+        {#if movie.yearOfPublication}
+            {movie.yearOfPublication}
+        {/if}
+
         {#if movie.duration}
             Duration: {movie.duration}min
         {/if}
