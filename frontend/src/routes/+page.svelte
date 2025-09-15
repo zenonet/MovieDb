@@ -9,6 +9,7 @@
 <div class="side-by-side-layout">
     <MovieList
         onMovieClicked={(movie) => selectedId = movie.id}
+        pageSize={1000}
     />
 
     {#if selectedId !== ""} 

@@ -3,14 +3,14 @@
     import { getMoviesByName } from "$lib/services/movieService";
     import type { Movie } from "$lib/services/types";
 
-    let { onMovieClicked } = $props<{ onMovieClicked: (id:Movie) => void}>();
+    let { onMovieClicked, pageSize } = $props<{ onMovieClicked: (id:Movie) => void, pageSize: number}>();
 
     let searchVal = $state("");
 
     let movies: Movie[] = $state([]);
 
     async function fetchMovies(){
-        let res = await getMoviesByName(searchVal);
+        let res = await getMoviesByName(searchVal, 0, pageSize);
         if (res.status == 200){
             movies = res.data;
         }
