@@ -98,7 +98,7 @@
                 <a href={`/night/${night.id}`}
                     >{new Date(night.time).toLocaleDateString(
                         window.navigator.language,
-                    )} (rated: {night.avgRating})</a
+                    )} (rated: {night.avgRating?.toFixed(2)})</a
                 >
             {/each}
             {#if movie.nights.length == 0}
