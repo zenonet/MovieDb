@@ -3,8 +3,16 @@
     flex-direction: column;
 }
 
+html{
+    /* --background: black;
+    --foreground: white; */
+    background: var(--background);
+    color: var(--foreground);
+}
+
 .movie-list-entry {
     background: var(--background);
+    color: var(--foreground);
 
     border: none;
     text-align: left;
