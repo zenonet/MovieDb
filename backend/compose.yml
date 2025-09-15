@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres
+    image: docker.io/library/postgres
     environment:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: wORFJVZH240V
@@ -9,17 +9,19 @@ services:
     ports:
         - 5432:5432
     volumes:
-        - pgdata:p
+        - dbdata:/var/lib/postgresql/data
   api:
-    image: zenonet/moviedbapi:1.0.0
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        DATABASE_URL: postgres://postgres:wORFJVZH240V@db:5432/movies
+    image: moviedbapi
+
     ports:
-      - '2767:80'
+      - '2222:80'
     depends_on:
     - db
+
 volumes:
-    pgdata: {}
+  dbdata:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '<dbPath>'
