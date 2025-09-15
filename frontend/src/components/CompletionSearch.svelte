@@ -49,6 +49,10 @@
         align-items: flex-start;
         gap: 5pt;
         border: var(--foreground) 1px solid;
+        border-top: none;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        padding: 5px;
     }
 
     #completionsBox button{

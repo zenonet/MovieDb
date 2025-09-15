@@ -1,0 +1,55 @@
+.list {
+    display: flex;
+    flex-direction: column;
+}
+
+html{
+    /* --background: black;
+    --foreground: white;
+     */
+    --foreground: #101010;
+
+    --primary: #2dd0d5;
+    --foreground-light: rgb(50, 50, 50);
+     
+     background: var(--background);
+    color: var(--foreground);
+
+
+    font-family: Noto system-ui, 'Segoe UI', Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.movie-list-entry {
+    background: var(--background);
+    color: var(--foreground);
+
+    border: none;
+    text-align: left;
+    font-size: 1.2em;
+    padding: unset;
+    font-weight: unset;
+}
+
+.movie-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    flex: 1;
+
+    max-height: 100%;
+
+    gap: 10px;
+}
+
+button {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 2px;
+    padding: 10px;
+    font-weight: 600;
+}
+
+a{
+    color: var(--foreground-light);
+}
