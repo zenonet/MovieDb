@@ -41,28 +41,29 @@
     <div
         style="display: flex; flex-direction: column; align-items: flex-start; flex: 1; overflow: auto"
     >
-        <h2>{movie.name}</h2>
-
-        <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}
-            >Create night</button
-        >
-        <button onclick={() => (showWatchlistAdder = true)}
-            >Add to watchlist</button
-        >
-
-        {#if showWatchlistAdder}
-            <WatchlistAdderPopup
-                {movie}
-                done={() => (showWatchlistAdder = false)}
-            ></WatchlistAdderPopup>
-        {/if}
-
         {#if movie.coverUrl}
             <img
                 src={movie.coverUrl}
                 alt={`Movie cover of ${movie.name}`}
                 height="400px"
             />
+        {/if}
+        <h2>{movie.name}</h2>
+
+        <div style="display: flex; gap: 10pt">
+            <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}
+                >Create night</button
+            >
+            <button onclick={() => (showWatchlistAdder = true)}
+                >Add to a watchlist</button
+            >
+        </div>
+
+        {#if showWatchlistAdder}
+            <WatchlistAdderPopup
+                {movie}
+                done={() => (showWatchlistAdder = false)}
+            ></WatchlistAdderPopup>
         {/if}
 
         {#if movie.yearOfPublication}
@@ -126,7 +127,9 @@
                     {#each getActorList(movie.actors) as l}
                         <tr>
                             <td>
-                                <a href={`/actor/${encodeURI(l.actor)}`}>{l.actor}</a>
+                                <a href={`/actor/${encodeURI(l.actor)}`}
+                                    >{l.actor}</a
+                                >
                             </td>
                             <td>{l.role}</td>
                         </tr>
