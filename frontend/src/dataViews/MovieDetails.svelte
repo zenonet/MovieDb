@@ -50,7 +50,13 @@
         {/if}
         <h2>{movie.name}</h2>
 
-        <div style="display: flex; gap: 10pt">
+        {#if movie.tagline}
+            <span style="font-size: 1.2em; font-style: italic;"
+                >{movie.tagline}</span
+            >
+        {/if}
+
+        <div style="display: flex; gap: 10pt; margin-top: 20px; margin-bottom: 20px">
             <button onclick={() => goto(`/createNight?movieId=${movie!!.id}`)}
                 >Create night</button
             >
@@ -65,25 +71,28 @@
                 done={() => (showWatchlistAdder = false)}
             ></WatchlistAdderPopup>
         {/if}
-
-        {#if movie.yearOfPublication}
-            {movie.yearOfPublication}
-        {/if}
-
-        {#if movie.duration}
-            Duration: {movie.duration}min
-        {/if}
-
+        
         {#if movie.description}
             <p style="font-size: 0.8em">{movie.description}</p>
         {/if}
 
-        {#if movie.avgRating}
-            Average Rating: {movie.avgRating!!.toFixed(2)}
+        {#if movie.yearOfPublication}
+        <div>
+            Published in {movie.yearOfPublication}
+        </div>
         {/if}
 
+        {#if movie.duration}
+        <div style="margin-top: 10pt;">
+            Duration: {movie.duration}min
+        </div>
+        {/if}
+
+
+        
         <h3>Movie nights</h3>
 
+        
         <div class="list">
             {#each movie.nights as night}
                 <a href={`/night/${night.id}`}
@@ -98,44 +107,46 @@
         </div>
 
         <h3>More Details</h3>
+
+        {#if movie.avgRating}
+            Average Rating: {movie.avgRating!!.toFixed(2)}
+        {/if}
+
+        <h4>Links</h4>
         {#if movie.trailerUrl}
             <a href={movie.trailerUrl}>Trailer</a>
         {/if}
 
-        {#if movie.tagline}
-            <span style="font-size: 1.2em; font-style: italic;"
-                >{movie.tagline}</span
-            >
-        {/if}
-
-        {#if movie.isMementoImport}
-            <span style="font-weight: light;"
-                >This movie was imported from a memento database</span
-            >
-        {/if}
-
+        
         {#if movie.actors}
-            <h2>Cast</h2>
-            <table>
-                <thead style="font-weight: bold">
-                    <tr>
-                        <td>Actor</td>
-                        <td>Character name</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each getActorList(movie.actors) as l}
-                        <tr>
-                            <td>
-                                <a href={`/actor/${encodeURI(l.actor)}`}
-                                    >{l.actor}</a
-                                >
-                            </td>
-                            <td>{l.role}</td>
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
+        <h2>Cast</h2>
+        <table>
+            <thead style="font-weight: bold">
+                <tr>
+                    <td>Actor</td>
+                    <td>Character name</td>
+                </tr>
+            </thead>
+            <tbody>
+                {#each getActorList(movie.actors) as l}
+                <tr>
+                    <td>
+                        <a href={`/actor/${encodeURI(l.actor)}`}
+                        >{l.actor}</a
+                        >
+                    </td>
+                    <td>{l.role}</td>
+                </tr>
+                {/each}
+            </tbody>
+        </table>
         {/if}
+            {#if movie.isMementoImport}
+        <span style="margin-top: 30pt; font-weight: light;"
+            >This movie was imported from a memento database</span
+        >
+    {/if}
     </div>
+
 {/if}
+    
