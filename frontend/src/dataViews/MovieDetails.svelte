@@ -5,6 +5,7 @@
     import { onMount, untrack } from "svelte";
     import WatchlistAdderPopup from "../WatchlistAdderPopup.svelte";
     import { base } from "$app/paths";
+    import Chart from "../components/Chart.svelte";
 
     let { movieId } = $props();
 
@@ -15,12 +16,24 @@
 
     $effect(() => {
         if (!movieId) return;
-        untrack(() => {
-            fetchMovieDetails();
+        untrack(async () => {
+            await fetchMovieDetails();
+            if (movie) {
+                movie.nights = movie?.nights.sort(
+                    (a, b) =>
+                        new Date(a.time).getTime() - new Date(b.time).getTime(),
+                );
+            }
         });
     });
-    onMount(() => {
-        fetchMovieDetails();
+    onMount(async () => {
+        await fetchMovieDetails();
+        if (movie) {
+            movie.nights = movie?.nights.sort(
+                (a, b) =>
+                    new Date(a.time).getTime() - new Date(b.time).getTime(),
+            );
+        }
     });
 
     let showWatchlistAdder = $state(false);
@@ -57,8 +70,12 @@
             >
         {/if}
 
-        <div style="display: flex; gap: 10pt; margin-top: 20px; margin-bottom: 20px">
-            <button onclick={() => goto(`${base}/createNight?movieId=${movie!!.id}`)}
+        <div
+            style="display: flex; gap: 10pt; margin-top: 20px; margin-bottom: 20px"
+        >
+            <button
+                onclick={() =>
+                    goto(`${base}/createNight?movieId=${movie!!.id}`)}
                 >Create night</button
             >
             <button onclick={() => (showWatchlistAdder = true)}
@@ -72,28 +89,25 @@
                 done={() => (showWatchlistAdder = false)}
             ></WatchlistAdderPopup>
         {/if}
-        
+
         {#if movie.description}
             <p style="font-size: 0.8em">{movie.description}</p>
         {/if}
 
         {#if movie.yearOfPublication}
-        <div>
-            Published in {movie.yearOfPublication}
-        </div>
+            <div>
+                Published in {movie.yearOfPublication}
+            </div>
         {/if}
 
         {#if movie.duration}
-        <div style="margin-top: 10pt;">
-            Duration: {movie.duration}min
-        </div>
+            <div style="margin-top: 10pt;">
+                Duration: {movie.duration}min
+            </div>
         {/if}
 
-
-        
         <h3>Movie nights</h3>
 
-        
         <div class="list">
             {#each movie.nights as night}
                 <a href={`${base}/night/${night.id}`}
@@ -118,36 +132,43 @@
             <a href={movie.trailerUrl}>Trailer</a>
         {/if}
 
-        
-        {#if movie.actors}
-        <h2>Cast</h2>
-        <table>
-            <thead style="font-weight: bold">
-                <tr>
-                    <td>Actor</td>
-                    <td>Character name</td>
-                </tr>
-            </thead>
-            <tbody>
-                {#each getActorList(movie.actors) as l}
-                <tr>
-                    <td>
-                        <a href={`${base}/actor/${encodeURI(l.actor)}`}
-                        >{l.actor}</a
-                        >
-                    </td>
-                    <td>{l.role}</td>
-                </tr>
-                {/each}
-            </tbody>
-        </table>
-        {/if}
-            {#if movie.isMementoImport}
-        <span style="margin-top: 30pt; font-weight: light;"
-            >This movie was imported from a memento database</span
-        >
-    {/if}
-    </div>
+        <h3>Rating chart</h3>
+        <Chart
+            points={movie.nights.map((n) => {
+                return {
+                    date: new Date(n.time),
+                    rating: n.avgRating as number,
+                };
+            })}
+        />
 
+        {#if movie.actors}
+            <h2>Cast</h2>
+            <table style="border-spacing: 20px 0">
+                <thead style="font-weight: bold">
+                    <tr>
+                        <td style="text-align: right;">Actor</td>
+                        <td>Character name</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each getActorList(movie.actors) as l}
+                        <tr>
+                            <td style="text-align: right;">
+                                <a href={`${base}/actor/${encodeURI(l.actor)}`}
+                                    >{l.actor}</a
+                                >
+                            </td>
+                            <td>{l.role}</td>
+                        </tr>
+                    {/each}
+                </tbody>
+            </table>
+        {/if}
+        {#if movie.isMementoImport}
+            <span style="margin-top: 30pt; font-weight: light;"
+                >This movie was imported from a memento database</span
+            >
+        {/if}
+    </div>
 {/if}
-    
