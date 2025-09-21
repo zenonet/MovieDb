@@ -47,7 +47,7 @@
                     <a href={`${base}/person/${rating.person.id}`}>{rating.person.name}</a>
                 </td>
                 <td>{rating.value.toFixed()}</td>
-                <td>{rating.time.toLocaleString(navigator.language)}</td>
+                <td>{new Date(rating.time).toLocaleString(navigator.language)}</td>
             </tr>
         {/each}
     </tbody>
